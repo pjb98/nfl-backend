@@ -1,12 +1,20 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS
-import nfl_data_py as nfl
 import pandas as pd
 from datetime import datetime
 import os
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
+
+# Try to import nfl_data_py with error handling
+try:
+    import nfl_data_py as nfl
+    NFL_DATA_AVAILABLE = True
+    print("✅ nfl-data-py imported successfully")
+except ImportError as e:
+    print(f"⚠️ nfl-data-py not available: {e}")
+    NFL_DATA_AVAILABLE = False
 
 # Cache to store data temporarily
 cache = {}
@@ -57,6 +65,9 @@ def get_schedule(season, week):
         cache_key = f"schedule_{season}_{week}"
 
         def fetch_schedule():
+            if not NFL_DATA_AVAILABLE:
+                return []
+
             # Get schedule data using nfl-data-py
             schedule_df = nfl.import_schedules([season])
 
